@@ -1,0 +1,7 @@
+ipykernel
+ipywidgets
+IProgress
+
+python-dotenv
+transformers
+torch
