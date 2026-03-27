@@ -5,3 +5,5 @@ IProgress
 python-dotenv
 transformers
 torch
+tqdm
+wandb
