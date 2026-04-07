@@ -18,7 +18,7 @@ print(f"SSH configuration written to {config_path}")
 git_user_name, git_user_email = get_git_identity()
 
 repo_dir = settings.remote_repo_dir
-requirements = f"{repo_dir}/my_requirements.txt"
+requirements = f"{repo_dir}/requirements.txt"
 
 with make_connection(settings) as conn:
     conn.run(f"mkdir -p {remote_quote(settings.remote_workdir)}")
