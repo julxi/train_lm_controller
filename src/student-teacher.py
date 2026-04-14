@@ -48,11 +48,11 @@ def synthetic_batch_generator(batch_size=1, seq_len=20, num_batches=1):
         # attention from 0th pos to first pad_token appearing after the 0th pos
         # the first appearing pad_token is included
         # it's a bit overly clever designed
-        attention_mask = torch.zeros_like(ids, dtype=bool)
-        attention_mask[:, 1:] = (
-            ids[:, :-1] != tokenizer.pad_token_id
-        )  # basically shifts ids one to the right
-        attention_mask[:, :2] = 1
+        # GPT-2 uses EOS as BOS, so generated sequences start with one EOS.
+        # cumsum <= 2 attends to everything up to and including the terminating EOS,
+        # and correctly handles sequences that hit max_new_tokens without a terminating EOS.
+        eos_cumsum = (ids == tokenizer.eos_token_id).cumsum(dim=1)
+        attention_mask = eos_cumsum <= 2
 
         yield ids.clone(), attention_mask
 
@@ -69,6 +69,8 @@ class TrainCfg:
 
 
 def train(cfg: TrainCfg):
+
+    samples_rows = []  # plain list, not a wandb object
 
     def log_samples(step):
         student_model.eval()
@@ -89,9 +91,11 @@ def train(cfg: TrainCfg):
                 )[0]
             )
 
-        table = wandb.Table(columns=["step", "type", "text"])
-        table.add_data(step, "greedy", greedy)
-        table.add_data(step, "sampled", sampled)
+        samples_rows.append([step, "greedy", greedy])
+        samples_rows.append([step, "sampled", sampled])
+
+        # reconstruct a fresh table from all rows so far
+        table = wandb.Table(columns=["step", "type", "text"], data=samples_rows)
         wandb.log({"samples": table}, step=step)
         student_model.train()
 
@@ -148,6 +152,7 @@ def train(cfg: TrainCfg):
             step += 1
 
             if step % cfg.sample_every == 0:
+                print("logging samples")
                 log_samples(step)
 
 

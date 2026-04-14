@@ -7,3 +7,5 @@ transformers
 torch
 tqdm
 wandb
+
+pytest
