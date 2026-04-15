@@ -141,7 +141,9 @@ class IdentityModel(nn.Module):
         hidden = self.new_wte(input_ids) + self.new_wpe(position_ids)
 
         if attention_mask is not None:
-            causal_mask = self._build_causal_4d_mask(attention_mask, hidden.dtype, seq_len)
+            causal_mask = self._build_causal_4d_mask(
+                attention_mask, hidden.dtype, seq_len
+            )
         else:
             causal_mask = None
 
@@ -152,7 +154,9 @@ class IdentityModel(nn.Module):
 
         # Rebuild mask after proj — dtype may differ
         if attention_mask is not None:
-            causal_mask = self._build_causal_4d_mask(attention_mask, hidden.dtype, seq_len)
+            causal_mask = self._build_causal_4d_mask(
+                attention_mask, hidden.dtype, seq_len
+            )
 
         for block in self.right_blocks:
             hidden = block(hidden, attention_mask=causal_mask, use_cache=False)[0]
@@ -213,7 +217,8 @@ def synthetic_batch_generator(gpt2_model, batch_size=1, seq_len=20, num_batches=
 
 # ── fixed test sequences ──────────────────────────────────────────────────────
 
-NATURAL_SEQ = "Hi, I'm Bert"
+NATURAL_SEQ = "Hi, I'm the Bertikus. Your friendly robot! How are you?"
+RANDOM_SEQ = "Yet intuition begins WILL actedWood workshop Vapor offerings Forestrybris footwear buzzing poisoning Southwest 323 heated MAC latt Payton"
 _rng = torch.Generator()
 _rng.manual_seed(42)
 RANDOM_SEQ_IDS = torch.randint(0, tokenizer.vocab_size, (1, 20), generator=_rng)
@@ -311,4 +316,5 @@ def train(cfg: ExperimentCfg):
 # ── run ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    train(ExperimentCfg())
+    cfg = ExperimentCfg(num_new_blocks=2)
+    train(cfg)

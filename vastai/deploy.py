@@ -1,3 +1,5 @@
+# run this from repo root
+
 # deploy.py
 from utils import (
     ensure_ssh_config,
@@ -32,6 +34,8 @@ with make_connection(settings) as conn:
             f"fi"
         )
     )
+
+    conn.put(".env", f"{remote_quote(settings.remote_workdir)}/.env")
 
     conn.run(
         f"uv pip install --python {remote_quote(settings.remote_python)} "
